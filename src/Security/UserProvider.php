@@ -11,6 +11,13 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
 {
+    private $externalApiClient;
+
+    public function __construct(ExternalApiClient $externalApiClient)
+    {
+        $this->externalApiClient = $externalApiClient;
+    }
+
     /**
      * Symfony calls this method if you use features like switch_user
      * or remember_me.
@@ -54,8 +61,10 @@ class UserProvider implements UserProviderInterface, PasswordUpgraderInterface
             throw new UnsupportedUserException(sprintf('Invalid user class "%s".', get_class($user)));
         }
 
-        // assume some work is done here
-        return $user;
+        // assume some more work is done here
+        $refreshedUser = $this->externalApiClient->requestForUserRefresh($user);
+
+        return $refreshedUser;
     }
 
     /**
